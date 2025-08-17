@@ -1,5 +1,5 @@
 """
-Application configuration using Pydantic settings.
+Application configuration settings.
 """
 from pydantic_settings import BaseSettings
 from typing import Optional
@@ -9,16 +9,16 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
     
     # Base configuration
-    BASE_URL: str
+    BASE_URL: Optional[str] = "https://eidcarosse.ch"
     
-    # WordPress configuration
-    WP_USERNAME: str
-    WP_APP_PASSWORD: str
+    # WordPress configuration (Application Passwords)
+    WP_USERNAME: Optional[str] = "demo_user"
+    WP_APP_PASSWORD: Optional[str] = "demo_password"
     WP_AUTH_TYPE: str = "basic"
     
     # WooCommerce configuration
-    WC_CONSUMER_KEY: str
-    WC_CONSUMER_SECRET: str
+    WC_CONSUMER_KEY: Optional[str] = "demo_consumer_key"
+    WC_CONSUMER_SECRET: Optional[str] = "demo_consumer_secret"
     
     # Scheduler configuration
     ENABLE_SCHEDULER: bool = False

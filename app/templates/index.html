@@ -223,6 +223,55 @@
                     </div>
                 </div>
 
+                <!-- Validation Demo Section -->
+                <div class="demo-section">
+                    <h3>🔍 JSON Schema Validation Demo</h3>
+                    <p>See how the system validates data integrity and provides clear error messages</p>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Valid Product Data</h5>
+                            <pre class="code-block"><code class="language-json" id="valid-product">
+{
+  "name": {
+    "en": {"translation": "BMW X5", "notes": "Product name", "limit": 50},
+    "fr": {"translation": "BMW X5", "notes": "Nom du produit", "limit": 50}
+  },
+  "description": {
+    "en": {"translation": "Luxury SUV", "notes": "Product description", "limit": 500},
+    "fr": {"translation": "SUV de luxe", "notes": "Description du produit", "limit": 500}
+  },
+  "price": "89,500",
+  "stock_quantity": 3
+}
+                            </code></pre>
+                            <button class="btn btn-success" onclick="validateProduct('valid')">Validate Valid Data</button>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Invalid Product Data</h5>
+                            <pre class="code-block"><code class="language-json" id="invalid-product">
+{
+  "name": {
+    "en": {"translation": "BMW X5"}
+  },
+  "price": "invalid_price",
+  "stock_quantity": -5
+}
+                            </code></pre>
+                            <button class="btn btn-danger" onclick="validateProduct('invalid')">Validate Invalid Data</button>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h5>Validation Results</h5>
+                            <div class="response-area" id="validation-result">
+                                <p class="text-muted">Click validation buttons to see results</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- API Test Section -->
                 <div class="demo-section">
                     <h3>🔧 API Testing</h3>
@@ -314,6 +363,56 @@
             
             document.getElementById('order-output').innerHTML = '<pre><code class="language-json">' + JSON.stringify(output, null, 2) + '</code></pre>';
             Prism.highlightAll();
+        }
+
+        async function validateProduct(type) {
+            let data = {};
+            
+            if (type === 'valid') {
+                data = JSON.parse(document.getElementById('valid-product').textContent);
+            } else {
+                data = JSON.parse(document.getElementById('invalid-product').textContent);
+            }
+            
+            try {
+                const response = await fetch('/validation/validate-product', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                let html = '<div class="mb-3">';
+                html += '<h6>Validation Result:</h6>';
+                html += '<div class="alert ' + (result.success ? 'alert-success' : 'alert-danger') + '">';
+                html += '<strong>' + result.message + '</strong>';
+                html += '</div>';
+                
+                if (result.data.errors && result.data.errors.length > 0) {
+                    html += '<h6>Errors:</h6><ul>';
+                    result.data.errors.forEach(error => {
+                        html += '<li class="text-danger">' + error + '</li>';
+                    });
+                    html += '</ul>';
+                }
+                
+                if (result.data.warnings && result.data.warnings.length > 0) {
+                    html += '<h6>Warnings:</h6><ul>';
+                    result.data.warnings.forEach(warning => {
+                        html += '<li class="text-warning">' + warning + '</li>';
+                    });
+                    html += '</ul>';
+                }
+                
+                html += '</div>';
+                
+                document.getElementById('validation-result').innerHTML = html;
+            } catch (error) {
+                document.getElementById('validation-result').innerHTML = '<div class="alert alert-danger">Error: ' + error.message + '</div>';
+            }
         }
 
         async function testAPI() {
