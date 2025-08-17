@@ -1,5 +1,5 @@
 """
-WordPress API router for posts.
+WordPress API router for posts with i18n support.
 """
 from fastapi import APIRouter, HTTPException, Query
 from typing import Dict, Any
@@ -10,8 +10,10 @@ from app.models.schemas import (
     NormalizedResponse, 
     PaginatedResponse
 )
+from app.models.i18n_schemas import MultiLanguageRequest, LanguageCode
 from app.services.wordpress_service import wordpress_service
 from app.services.template_service import template_service
+from app.services.i18n_template_service import i18n_template_service
 
 router = APIRouter()
 
@@ -48,24 +50,30 @@ async def get_posts(
 
 
 @router.post("/posts", response_model=NormalizedResponse)
-async def create_post(request: ClientRequest):
+async def create_post(request: MultiLanguageRequest):
     """
-    Create a new WordPress post from client JSON.
+    Create a new WordPress post from client JSON with i18n support.
     
     Args:
-        request: Client JSON data to transform and create post
+        request: Multi-language client JSON data to transform and create post
         
     Returns:
         Created post data
     """
     try:
-        wp_post_data = template_service.transform_to_wp_post(request.data)
+        # Transform client data to WordPress format with i18n support
+        wp_post_data = i18n_template_service.transform_to_wp_post_i18n(
+            request.data, 
+            request.language.value
+        )
+        
+        # Create post via WordPress API
         created_post = await wordpress_service.create_post(wp_post_data)
         
         return NormalizedResponse(
             success=True,
             data=created_post,
-            message="Post created successfully"
+            message=f"Post created successfully in {request.language.value}"
         )
     except ValueError as e:
         raise HTTPException(

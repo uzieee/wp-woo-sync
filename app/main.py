@@ -1,8 +1,10 @@
 """
 Main FastAPI application entry point.
 """
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from contextlib import asynccontextmanager
 import os
 from dotenv import load_dotenv
@@ -12,6 +14,9 @@ from app.core.scheduler import scheduler
 from app.api import wc, wp
 
 load_dotenv()
+
+# Setup templates
+templates = Jinja2Templates(directory="app/templates")
 
 
 @asynccontextmanager
@@ -29,8 +34,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="WP/WC Sync API",
-    description="FastAPI microservice for WordPress and WooCommerce synchronization",
-    version="1.0.0",
+    description="FastAPI microservice for WordPress and WooCommerce synchronization with i18n support",
+    version="2.0.0",
     lifespan=lifespan
 )
 
@@ -46,15 +51,29 @@ app.include_router(wc.router, prefix="/wc", tags=["WooCommerce"])
 app.include_router(wp.router, prefix="/wp", tags=["WordPress"])
 
 
-@app.get("/")
-async def root():
-    """Root endpoint."""
+@app.get("/", response_class=HTMLResponse)
+async def root(request: Request):
+    """Serve the frontend demo interface."""
+    return templates.TemplateResponse("index.html", {"request": request})
+
+
+@app.get("/api")
+async def api_info():
+    """API information endpoint."""
     return {
-        "message": "WP/WC Sync API",
-        "version": "1.0.0",
+        "message": "WP/WC Sync API v2.0.0",
+        "version": "2.0.0",
+        "features": [
+            "i18n JSON Support",
+            "Multi-language Transformation",
+            "JSON Schema Validation",
+            "WordPress Integration",
+            "WooCommerce Integration"
+        ],
         "endpoints": {
             "woocommerce": "/wc",
-            "wordpress": "/wp"
+            "wordpress": "/wp",
+            "frontend": "/"
         }
     }
 
@@ -62,7 +81,7 @@ async def root():
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
-    return {"status": "healthy"}
+    return {"status": "healthy", "version": "2.0.0"}
 
 
 if __name__ == "__main__":

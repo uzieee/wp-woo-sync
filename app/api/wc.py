@@ -1,5 +1,5 @@
 """
-WooCommerce API router for products and orders.
+WooCommerce API router for products and orders with i18n support.
 """
 from fastapi import APIRouter, HTTPException, Query
 from typing import Dict, Any
@@ -10,8 +10,10 @@ from app.models.schemas import (
     NormalizedResponse, 
     PaginatedResponse
 )
+from app.models.i18n_schemas import MultiLanguageRequest, LanguageCode
 from app.services.woocommerce_service import woocommerce_service
 from app.services.template_service import template_service
+from app.services.i18n_template_service import i18n_template_service
 
 router = APIRouter()
 
@@ -48,24 +50,30 @@ async def get_products(
 
 
 @router.post("/products", response_model=NormalizedResponse)
-async def create_product(request: ClientRequest):
+async def create_product(request: MultiLanguageRequest):
     """
-    Create a new WooCommerce product from client JSON.
+    Create a new WooCommerce product from client JSON with i18n support.
     
     Args:
-        request: Client JSON data to transform and create product
+        request: Multi-language client JSON data to transform and create product
         
     Returns:
         Created product data
     """
     try:
-        wc_product_data = template_service.transform_to_wc_product(request.data)
+        # Transform client data to WooCommerce format with i18n support
+        wc_product_data = i18n_template_service.transform_to_wc_product_i18n(
+            request.data, 
+            request.language.value
+        )
+        
+        # Create product via WooCommerce API
         created_product = await woocommerce_service.create_product(wc_product_data)
         
         return NormalizedResponse(
             success=True,
             data=created_product,
-            message="Product created successfully"
+            message=f"Product created successfully in {request.language.value}"
         )
     except ValueError as e:
         raise HTTPException(
@@ -119,24 +127,30 @@ async def get_orders(
 
 
 @router.post("/orders", response_model=NormalizedResponse)
-async def create_order(request: ClientRequest):
+async def create_order(request: MultiLanguageRequest):
     """
-    Create a new WooCommerce order from client JSON.
+    Create a new WooCommerce order from client JSON with i18n support.
     
     Args:
-        request: Client JSON data to transform and create order
+        request: Multi-language client JSON data to transform and create order
         
     Returns:
         Created order data
     """
     try:
-        wc_order_data = template_service.transform_to_wc_order(request.data)
+        # Transform client data to WooCommerce format with i18n support
+        wc_order_data = i18n_template_service.transform_to_wc_order_i18n(
+            request.data, 
+            request.language.value
+        )
+        
+        # Create order via WooCommerce API
         created_order = await woocommerce_service.create_order(wc_order_data)
         
         return NormalizedResponse(
             success=True,
             data=created_order,
-            message="Order created successfully"
+            message=f"Order created successfully in {request.language.value}"
         )
     except ValueError as e:
         raise HTTPException(

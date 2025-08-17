@@ -1,0 +1,136 @@
+{
+  "name": {
+    "en": {
+      "translation": "BMW X5 xDrive40i 2024",
+      "notes": "Product name in English",
+      "context": "Main product title",
+      "limit": 50
+    },
+    "fr": {
+      "translation": "BMW X5 xDrive40i 2024",
+      "notes": "Nom du produit en français",
+      "context": "Titre principal du produit",
+      "limit": 50
+    },
+    "de": {
+      "translation": "BMW X5 xDrive40i 2024",
+      "notes": "Produktname auf Deutsch",
+      "context": "Hauptprodukttitel",
+      "limit": 50
+    },
+    "it": {
+      "translation": "BMW X5 xDrive40i 2024",
+      "notes": "Nome del prodotto in italiano",
+      "context": "Titolo principale del prodotto",
+      "limit": 50
+    },
+    "es": {
+      "translation": "BMW X5 xDrive40i 2024",
+      "notes": "Nombre del producto en español",
+      "context": "Título principal del producto",
+      "limit": 50
+    }
+  },
+  "description": {
+    "en": {
+      "translation": "Luxury SUV with advanced technology and refined design. Features the latest BMW innovations including intelligent driver assistance systems and premium interior materials.",
+      "notes": "Product description in English",
+      "context": "Detailed product description",
+      "limit": 500
+    },
+    "fr": {
+      "translation": "SUV de luxe avec technologie avancée et design raffiné. Doté des dernières innovations BMW incluant des systèmes d'assistance à la conduite intelligents et des matériaux intérieurs premium.",
+      "notes": "Description du produit en français",
+      "context": "Description détaillée du produit",
+      "limit": 500
+    },
+    "de": {
+      "translation": "Luxus-SUV mit fortschrittlicher Technologie und raffiniertem Design. Ausgestattet mit den neuesten BMW-Innovationen einschließlich intelligenter Fahrerassistenzsysteme und Premium-Innenraummaterialien.",
+      "notes": "Produktbeschreibung auf Deutsch",
+      "context": "Detaillierte Produktbeschreibung",
+      "limit": 500
+    },
+    "it": {
+      "translation": "SUV di lusso con tecnologia avanzata e design raffinato. Dotato delle ultime innovazioni BMW inclusi sistemi di assistenza alla guida intelligenti e materiali interni premium.",
+      "notes": "Descrizione del prodotto in italiano",
+      "context": "Descrizione dettagliata del prodotto",
+      "limit": 500
+    },
+    "es": {
+      "translation": "SUV de lujo con tecnología avanzada y diseño refinado. Equipado con las últimas innovaciones BMW incluyendo sistemas de asistencia al conductor inteligentes y materiales interiores premium.",
+      "notes": "Descripción del producto en español",
+      "context": "Descripción detallada del producto",
+      "limit": 500
+    }
+  },
+  "short_description": {
+    "en": {
+      "translation": "Premium luxury SUV with cutting-edge technology",
+      "notes": "Short product description in English",
+      "context": "Brief product summary",
+      "limit": 100
+    },
+    "fr": {
+      "translation": "SUV de luxe premium avec technologie de pointe",
+      "notes": "Description courte du produit en français",
+      "context": "Résumé bref du produit",
+      "limit": 100
+    },
+    "de": {
+      "translation": "Premium-Luxus-SUV mit modernster Technologie",
+      "notes": "Kurze Produktbeschreibung auf Deutsch",
+      "context": "Kurze Produktzusammenfassung",
+      "limit": 100
+    },
+    "it": {
+      "translation": "SUV di lusso premium con tecnologia all'avanguardia",
+      "notes": "Descrizione breve del prodotto in italiano",
+      "context": "Breve riassunto del prodotto",
+      "limit": 100
+    },
+    "es": {
+      "translation": "SUV de lujo premium con tecnología de vanguardia",
+      "notes": "Descripción corta del producto en español",
+      "context": "Resumen breve del producto",
+      "limit": 100
+    }
+  },
+  "price": "89,500",
+  "type": "simple",
+  "categories": [
+    {
+      "id": 15,
+      "name": "BMW"
+    },
+    {
+      "id": 22,
+      "name": "SUV"
+    }
+  ],
+  "images": [
+    {
+      "url": "https://eidcarosse.ch/wp-content/uploads/bmw-x5-front.jpg",
+      "alt": "BMW X5 Front View"
+    },
+    {
+      "url": "https://eidcarosse.ch/wp-content/uploads/bmw-x5-side.jpg",
+      "alt": "BMW X5 Side View"
+    }
+  ],
+  "attributes": [
+    {
+      "name": "Color",
+      "visible": true,
+      "variation": true,
+      "options": ["Alpine White", "Tanzanite Blue", "Carbon Black"]
+    },
+    {
+      "name": "Interior",
+      "visible": true,
+      "variation": false,
+      "options": ["Vernasca Leather"]
+    }
+  ],
+  "stock_quantity": 3,
+  "weight": "2,150"
+} 
