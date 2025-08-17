@@ -51,15 +51,12 @@
                 </div>
 
                 <div class="mb-3">
-                    <h5>API Endpoints</h5>
+                    <h5>Unified API Endpoint</h5>
                     <ul class="list-unstyled">
-                        <li><strong>GET</strong> /wc/products</li>
-                        <li><strong>POST</strong> /wc/products</li>
-                        <li><strong>GET</strong> /wc/orders</li>
-                        <li><strong>POST</strong> /wc/orders</li>
-                        <li><strong>GET</strong> /wp/posts</li>
-                        <li><strong>POST</strong> /wp/posts</li>
+                        <li><strong>POST</strong> /api/sync</li>
+                        <li><strong>GET</strong> /api/sync</li>
                     </ul>
+                    <small class="text-muted">Single endpoint with type-based routing</small>
                 </div>
 
                 <div class="mb-3">
@@ -272,25 +269,27 @@
                     </div>
                 </div>
 
-                <!-- API Test Section -->
+                <!-- Unified API Test Section -->
                 <div class="demo-section">
-                    <h3>🔧 API Testing</h3>
-                    <p>Test the actual API endpoints</p>
+                    <h3>🔧 Unified API Testing</h3>
+                    <p>Test the single unified endpoint with type-based routing</p>
                     
                     <div class="row">
                         <div class="col-md-6">
                             <h5>API Request</h5>
-                            <select id="api-endpoint" class="form-select mb-2">
-                                <option value="POST /wc/products">POST /wc/products</option>
-                                <option value="POST /wp/posts">POST /wp/posts</option>
-                                <option value="POST /wc/orders">POST /wc/orders</option>
+                            <select id="api-type" class="form-select mb-2">
+                                <option value="wc_product">Create WooCommerce Product</option>
+                                <option value="wp_post">Create WordPress Post</option>
+                                <option value="wc_order">Create WooCommerce Order</option>
+                                <option value="validate_product">Validate Product Schema</option>
+                                <option value="validate_i18n">Validate i18n Structure</option>
                             </select>
-                            <button class="btn btn-info" onclick="testAPI()">Test API</button>
+                            <button class="btn btn-info" onclick="testUnifiedAPI()">Test Unified API</button>
                         </div>
                         <div class="col-md-6">
                             <h5>API Response</h5>
                             <div class="response-area" id="api-response">
-                                <p class="text-muted">Click "Test API" to see the response</p>
+                                <p class="text-muted">Click "Test Unified API" to see the response</p>
                             </div>
                         </div>
                     </div>
@@ -374,13 +373,18 @@
                 data = JSON.parse(document.getElementById('invalid-product').textContent);
             }
             
+            const requestData = {
+                type: 'validate_product',
+                data: data
+            };
+            
             try {
-                const response = await fetch('/validation/validate-product', {
+                const response = await fetch('/api/sync', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(data)
+                    body: JSON.stringify(requestData)
                 });
                 
                 const result = await response.json();
@@ -415,38 +419,31 @@
             }
         }
 
-        async function testAPI() {
-            const endpoint = document.getElementById('api-endpoint').value;
+        async function testUnifiedAPI() {
+            const apiType = document.getElementById('api-type').value;
             const language = getSelectedLanguage();
             
-            let requestData = {};
-            let url = '';
+            let requestData = {
+                type: apiType,
+                language: language,
+                fallback_language: "en"
+            };
             
-            if (endpoint === 'POST /wc/products') {
-                requestData = {
-                    data: JSON.parse(document.getElementById('product-input').textContent),
-                    language: language,
-                    fallback_language: "en"
-                };
-                url = '/wc/products';
-            } else if (endpoint === 'POST /wp/posts') {
-                requestData = {
-                    data: JSON.parse(document.getElementById('post-input').textContent),
-                    language: language,
-                    fallback_language: "en"
-                };
-                url = '/wp/posts';
-            } else if (endpoint === 'POST /wc/orders') {
-                requestData = {
-                    data: JSON.parse(document.getElementById('order-input').textContent),
-                    language: language,
-                    fallback_language: "en"
-                };
-                url = '/wc/orders';
+            // Get data based on type
+            if (apiType === 'wc_product') {
+                requestData.data = JSON.parse(document.getElementById('product-input').textContent);
+            } else if (apiType === 'wp_post') {
+                requestData.data = JSON.parse(document.getElementById('post-input').textContent);
+            } else if (apiType === 'wc_order') {
+                requestData.data = JSON.parse(document.getElementById('order-input').textContent);
+            } else if (apiType === 'validate_product') {
+                requestData.data = JSON.parse(document.getElementById('valid-product').textContent);
+            } else if (apiType === 'validate_i18n') {
+                requestData.data = JSON.parse(document.getElementById('product-input').textContent);
             }
             
             try {
-                const response = await fetch(url, {
+                const response = await fetch('/api/sync', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

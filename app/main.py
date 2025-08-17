@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 
 from app.core.config import settings
 from app.core.scheduler import scheduler
-from app.api import wc, wp, validation
+from app.api import unified
 
 load_dotenv()
 
@@ -47,9 +47,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(wc.router, prefix="/wc", tags=["WooCommerce"])
-app.include_router(wp.router, prefix="/wp", tags=["WordPress"])
-app.include_router(validation.router, prefix="/validation", tags=["Validation"])
+app.include_router(unified.router, prefix="/api", tags=["Unified API"])
 
 
 @app.get("/", response_class=HTMLResponse)
