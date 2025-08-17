@@ -54,9 +54,8 @@
                     <h5>Unified API Endpoint</h5>
                     <ul class="list-unstyled">
                         <li><strong>POST</strong> /api/sync</li>
-                        <li><strong>GET</strong> /api/sync</li>
                     </ul>
-                    <small class="text-muted">Single endpoint with type-based routing</small>
+                    <small class="text-muted">Single endpoint with action_id-based routing</small>
                 </div>
 
                 <div class="mb-3">
@@ -272,15 +271,15 @@
                 <!-- Unified API Test Section -->
                 <div class="demo-section">
                     <h3>🔧 Unified API Testing</h3>
-                    <p>Test the single unified endpoint with type-based routing</p>
+                    <p>Test the single unified endpoint with action_id-based routing</p>
                     
                     <div class="row">
                         <div class="col-md-6">
                             <h5>API Request</h5>
-                            <select id="api-type" class="form-select mb-2">
-                                <option value="wc_product">Create WooCommerce Product</option>
-                                <option value="wp_post">Create WordPress Post</option>
-                                <option value="wc_order">Create WooCommerce Order</option>
+                            <select id="api-action" class="form-select mb-2">
+                                <option value="create_wc_product">Create WooCommerce Product</option>
+                                <option value="create_wp_post">Create WordPress Post</option>
+                                <option value="create_wc_order">Create WooCommerce Order</option>
                                 <option value="validate_product">Validate Product Schema</option>
                                 <option value="validate_i18n">Validate i18n Structure</option>
                             </select>
@@ -374,7 +373,7 @@
             }
             
             const requestData = {
-                type: 'validate_product',
+                action_id: 'validate_product',
                 data: data
             };
             
@@ -420,25 +419,25 @@
         }
 
         async function testUnifiedAPI() {
-            const apiType = document.getElementById('api-type').value;
+            const apiAction = document.getElementById('api-action').value;
             const language = getSelectedLanguage();
             
             let requestData = {
-                type: apiType,
+                action_id: apiAction,
                 language: language,
                 fallback_language: "en"
             };
             
-            // Get data based on type
-            if (apiType === 'wc_product') {
+            // Get data based on action_id
+            if (apiAction === 'create_wc_product') {
                 requestData.data = JSON.parse(document.getElementById('product-input').textContent);
-            } else if (apiType === 'wp_post') {
+            } else if (apiAction === 'create_wp_post') {
                 requestData.data = JSON.parse(document.getElementById('post-input').textContent);
-            } else if (apiType === 'wc_order') {
+            } else if (apiAction === 'create_wc_order') {
                 requestData.data = JSON.parse(document.getElementById('order-input').textContent);
-            } else if (apiType === 'validate_product') {
+            } else if (apiAction === 'validate_product') {
                 requestData.data = JSON.parse(document.getElementById('valid-product').textContent);
-            } else if (apiType === 'validate_i18n') {
+            } else if (apiAction === 'validate_i18n') {
                 requestData.data = JSON.parse(document.getElementById('product-input').textContent);
             }
             

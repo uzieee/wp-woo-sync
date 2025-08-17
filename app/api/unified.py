@@ -1,16 +1,11 @@
 """
-Unified API endpoint that routes to different functions based on JSON type attribute.
+Unified API endpoint that routes to different functions based on action_id attribute.
 """
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException
 from typing import Dict, Any
 from pydantic import ValidationError
 
-from app.models.schemas import (
-    PaginationParams, 
-    NormalizedResponse, 
-    PaginatedResponse
-)
-from app.models.i18n_schemas import MultiLanguageRequest, LanguageCode
+from app.models.schemas import NormalizedResponse
 from app.services.woocommerce_service import woocommerce_service
 from app.services.wordpress_service import wordpress_service
 from app.services.i18n_template_service import i18n_template_service
@@ -21,57 +16,57 @@ router = APIRouter()
 @router.post("/sync", response_model=NormalizedResponse)
 async def unified_sync_endpoint(request: Dict[str, Any]):
     """
-    Unified endpoint that routes to different functions based on 'type' attribute.
+    Unified endpoint that routes to different functions based on 'action_id' attribute.
     
-    Supported types:
-    - 'wc_product': Create WooCommerce product
-    - 'wc_order': Create WooCommerce order  
-    - 'wp_post': Create WordPress post
+    Supported action_ids:
+    - 'create_wc_product': Create WooCommerce product
+    - 'create_wc_order': Create WooCommerce order  
+    - 'create_wp_post': Create WordPress post
     - 'validate_product': Validate product schema
     - 'validate_i18n': Validate i18n structure
     
     Args:
-        request: JSON with 'type' attribute and corresponding data
+        request: JSON with 'action_id' attribute and corresponding data
         
     Returns:
         Response from the appropriate function
     """
-    if 'type' not in request:
+    if 'action_id' not in request:
         raise HTTPException(
             status_code=400,
             detail={
-                "error": "Missing 'type' attribute",
-                "message": "Request must include 'type' field to determine routing",
-                "supported_types": [
-                    "wc_product", "wc_order", "wp_post", 
+                "error": "Missing 'action_id' attribute",
+                "message": "Request must include 'action_id' field to determine routing",
+                "supported_action_ids": [
+                    "create_wc_product", "create_wc_order", "create_wp_post", 
                     "validate_product", "validate_i18n"
                 ]
             }
         )
     
-    request_type = request.get('type')
+    action_id = request.get('action_id')
     data = request.get('data', {})
     language = request.get('language', 'en')
     fallback_language = request.get('fallback_language', 'en')
     
     try:
-        if request_type == 'wc_product':
+        if action_id == 'create_wc_product':
             return await create_wc_product(data, language, fallback_language)
-        elif request_type == 'wc_order':
+        elif action_id == 'create_wc_order':
             return await create_wc_order(data, language, fallback_language)
-        elif request_type == 'wp_post':
+        elif action_id == 'create_wp_post':
             return await create_wp_post(data, language, fallback_language)
-        elif request_type == 'validate_product':
+        elif action_id == 'validate_product':
             return await validate_product_schema(data)
-        elif request_type == 'validate_i18n':
+        elif action_id == 'validate_i18n':
             return await validate_i18n_structure(data)
         else:
             raise HTTPException(
                 status_code=400,
                 detail={
-                    "error": f"Unsupported type: {request_type}",
-                    "supported_types": [
-                        "wc_product", "wc_order", "wp_post", 
+                    "error": f"Unsupported action_id: {action_id}",
+                    "supported_action_ids": [
+                        "create_wc_product", "create_wc_order", "create_wp_post", 
                         "validate_product", "validate_i18n"
                     ]
                 }
@@ -82,64 +77,13 @@ async def unified_sync_endpoint(request: Dict[str, Any]):
         raise HTTPException(
             status_code=500,
             detail={
-                "error": f"Failed to process {request_type}",
+                "error": f"Failed to process action_id: {action_id}",
                 "details": str(e)
             }
         )
 
 
-@router.get("/sync", response_model=PaginatedResponse)
-async def unified_get_endpoint(
-    type: str = Query(..., description="Type of data to retrieve"),
-    page: int = Query(default=1, ge=1, description="Page number"),
-    per_page: int = Query(default=10, ge=1, le=100, description="Items per page")
-):
-    """
-    Unified GET endpoint for retrieving data.
-    
-    Supported types:
-    - 'wc_products': Get WooCommerce products
-    - 'wc_orders': Get WooCommerce orders
-    - 'wp_posts': Get WordPress posts
-    
-    Args:
-        type: Type of data to retrieve
-        page: Page number
-        per_page: Items per page
-        
-    Returns:
-        Paginated response
-    """
-    pagination = PaginationParams(page=page, per_page=per_page)
-    
-    try:
-        if type == 'wc_products':
-            return await woocommerce_service.get_products(pagination)
-        elif type == 'wc_orders':
-            return await woocommerce_service.get_orders(pagination)
-        elif type == 'wp_posts':
-            return await wordpress_service.get_posts(pagination)
-        else:
-            raise HTTPException(
-                status_code=400,
-                detail={
-                    "error": f"Unsupported type: {type}",
-                    "supported_types": ["wc_products", "wc_orders", "wp_posts"]
-                }
-            )
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail={
-                "error": f"Failed to retrieve {type}",
-                "details": str(e)
-            }
-        )
-
-
-# Helper functions for each type
+# Helper functions for each action_id
 async def create_wc_product(data: Dict[str, Any], language: str, fallback_language: str) -> NormalizedResponse:
     """Create WooCommerce product."""
     wc_product_data = i18n_template_service.transform_to_wc_product_i18n(data, language)
