@@ -1,6 +1,3 @@
-"""
-Unified API endpoint that routes to different functions based on action_id attribute.
-"""
 from fastapi import APIRouter, HTTPException
 from typing import Dict, Any
 from pydantic import ValidationError
@@ -15,22 +12,6 @@ router = APIRouter()
 
 @router.post("/sync", response_model=NormalizedResponse)
 async def unified_sync_endpoint(request: Dict[str, Any]):
-    """
-    Unified endpoint that routes to different functions based on 'action_id' attribute.
-    
-    Supported action_ids:
-    - 'create_wc_product': Create WooCommerce product
-    - 'create_wc_order': Create WooCommerce order  
-    - 'create_wp_post': Create WordPress post
-    - 'validate_product': Validate product schema
-    - 'validate_i18n': Validate i18n structure
-    
-    Args:
-        request: JSON with 'action_id' attribute and corresponding data
-        
-    Returns:
-        Response from the appropriate function
-    """
     if 'action_id' not in request:
         raise HTTPException(
             status_code=400,
@@ -83,9 +64,7 @@ async def unified_sync_endpoint(request: Dict[str, Any]):
         )
 
 
-# Helper functions for each action_id
 async def create_wc_product(data: Dict[str, Any], language: str, fallback_language: str) -> NormalizedResponse:
-    """Create WooCommerce product."""
     wc_product_data = i18n_template_service.transform_to_wc_product_i18n(data, language)
     created_product = await woocommerce_service.create_product(wc_product_data)
     
@@ -97,7 +76,6 @@ async def create_wc_product(data: Dict[str, Any], language: str, fallback_langua
 
 
 async def create_wc_order(data: Dict[str, Any], language: str, fallback_language: str) -> NormalizedResponse:
-    """Create WooCommerce order."""
     wc_order_data = i18n_template_service.transform_to_wc_order_i18n(data, language)
     created_order = await woocommerce_service.create_order(wc_order_data)
     
@@ -109,7 +87,6 @@ async def create_wc_order(data: Dict[str, Any], language: str, fallback_language
 
 
 async def create_wp_post(data: Dict[str, Any], language: str, fallback_language: str) -> NormalizedResponse:
-    """Create WordPress post."""
     wp_post_data = i18n_template_service.transform_to_wp_post_i18n(data, language)
     created_post = await wordpress_service.create_post(wp_post_data)
     
@@ -121,43 +98,39 @@ async def create_wp_post(data: Dict[str, Any], language: str, fallback_language:
 
 
 async def validate_product_schema(data: Dict[str, Any]) -> NormalizedResponse:
-    """Validate product schema."""
     errors = []
     warnings = []
     
-    # Validate i18n structure
     if "name" in data:
         try:
             from app.models.i18n_schemas import I18nData
             name_data = I18nData(**data["name"])
-            warnings.append("✅ Product name i18n structure is valid")
+            warnings.append("Product name i18n structure is valid")
         except ValidationError as e:
-            errors.append(f"❌ Product name validation failed: {str(e)}")
+            errors.append(f"Product name validation failed: {str(e)}")
     else:
-        errors.append("❌ Product name is required")
+        errors.append("Product name is required")
     
     if "description" in data:
         try:
             from app.models.i18n_schemas import I18nData
             desc_data = I18nData(**data["description"])
-            warnings.append("✅ Product description i18n structure is valid")
+            warnings.append("Product description i18n structure is valid")
         except ValidationError as e:
-            errors.append(f"❌ Product description validation failed: {str(e)}")
+            errors.append(f"Product description validation failed: {str(e)}")
     else:
-        errors.append("❌ Product description is required")
+        errors.append("Product description is required")
     
-    # Validate price
     if "price" not in data:
-        errors.append("❌ Product price is required")
+        errors.append("Product price is required")
     elif not isinstance(data["price"], (str, int, float)):
-        errors.append("❌ Product price must be a string or number")
+        errors.append("Product price must be a string or number")
     
-    # Validate stock quantity
     if "stock_quantity" in data:
         if not isinstance(data["stock_quantity"], int):
-            errors.append("❌ Stock quantity must be an integer")
+            errors.append("Stock quantity must be an integer")
         elif data["stock_quantity"] < 0:
-            errors.append("❌ Stock quantity cannot be negative")
+            errors.append("Stock quantity cannot be negative")
     
     is_valid = len(errors) == 0
     
@@ -174,7 +147,6 @@ async def validate_product_schema(data: Dict[str, Any]) -> NormalizedResponse:
 
 
 async def validate_i18n_structure(data: Dict[str, Any]) -> NormalizedResponse:
-    """Validate i18n structure."""
     errors = []
     warnings = []
     
@@ -183,21 +155,20 @@ async def validate_i18n_structure(data: Dict[str, Any]) -> NormalizedResponse:
             try:
                 from app.models.i18n_schemas import I18nData
                 i18n_data = I18nData(**field_data)
-                warnings.append(f"✅ {field_name} i18n structure is valid")
+                warnings.append(f"{field_name} i18n structure is valid")
                 
-                # Check for missing translations
                 missing_langs = []
                 for lang in ['fr', 'de', 'it', 'es']:
                     if not hasattr(i18n_data, lang) or not getattr(i18n_data, lang):
                         missing_langs.append(lang)
                 
                 if missing_langs:
-                    warnings.append(f"⚠️ {field_name} missing translations for: {', '.join(missing_langs)}")
+                    warnings.append(f"{field_name} missing translations for: {', '.join(missing_langs)}")
                 
             except ValidationError as e:
-                errors.append(f"❌ {field_name} i18n validation failed: {str(e)}")
+                errors.append(f"{field_name} i18n validation failed: {str(e)}")
         else:
-            warnings.append(f"ℹ️ {field_name} is not i18n data (single value)")
+            warnings.append(f"{field_name} is not i18n data (single value)")
     
     is_valid = len(errors) == 0
     

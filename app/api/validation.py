@@ -1,6 +1,3 @@
-"""
-Validation demo endpoints to showcase JSON schema validation.
-"""
 from fastapi import APIRouter, HTTPException
 from pydantic import ValidationError
 from typing import Dict, Any, List
@@ -13,60 +10,47 @@ router = APIRouter()
 
 @router.post("/validate-product", response_model=NormalizedResponse)
 async def validate_product_schema(data: Dict[str, Any]):
-    """
-    Validate product data against i18n schema.
-    
-    Args:
-        data: Product data to validate
-        
-    Returns:
-        Validation result with detailed feedback
-    """
     errors = []
     warnings = []
     
-    # Validate i18n structure
     if "name" in data:
         try:
             name_data = I18nData(**data["name"])
-            warnings.append("✅ Product name i18n structure is valid")
+            warnings.append("Product name i18n structure is valid")
         except ValidationError as e:
-            errors.append(f"❌ Product name validation failed: {str(e)}")
+            errors.append(f"Product name validation failed: {str(e)}")
     else:
-        errors.append("❌ Product name is required")
+        errors.append("Product name is required")
     
     if "description" in data:
         try:
             desc_data = I18nData(**data["description"])
-            warnings.append("✅ Product description i18n structure is valid")
+            warnings.append("Product description i18n structure is valid")
         except ValidationError as e:
-            errors.append(f"❌ Product description validation failed: {str(e)}")
+            errors.append(f"Product description validation failed: {str(e)}")
     else:
-        errors.append("❌ Product description is required")
+        errors.append("Product description is required")
     
-    # Validate price
     if "price" not in data:
-        errors.append("❌ Product price is required")
+        errors.append("Product price is required")
     elif not isinstance(data["price"], (str, int, float)):
-        errors.append("❌ Product price must be a string or number")
+        errors.append("Product price must be a string or number")
     
-    # Validate categories
     if "categories" in data:
         if not isinstance(data["categories"], list):
-            errors.append("❌ Categories must be a list")
+            errors.append("Categories must be a list")
         else:
             for i, cat in enumerate(data["categories"]):
                 if not isinstance(cat, dict):
-                    errors.append(f"❌ Category {i} must be an object")
+                    errors.append(f"Category {i} must be an object")
                 elif "id" not in cat or "name" not in cat:
-                    errors.append(f"❌ Category {i} must have 'id' and 'name' fields")
+                    errors.append(f"Category {i} must have 'id' and 'name' fields")
     
-    # Validate stock quantity
     if "stock_quantity" in data:
         if not isinstance(data["stock_quantity"], int):
-            errors.append("❌ Stock quantity must be an integer")
+            errors.append("Stock quantity must be an integer")
         elif data["stock_quantity"] < 0:
-            errors.append("❌ Stock quantity cannot be negative")
+            errors.append("Stock quantity cannot be negative")
     
     is_valid = len(errors) == 0
     
@@ -84,45 +68,33 @@ async def validate_product_schema(data: Dict[str, Any]):
 
 @router.post("/validate-i18n", response_model=NormalizedResponse)
 async def validate_i18n_structure(data: Dict[str, Any]):
-    """
-    Validate i18n JSON structure specifically.
-    
-    Args:
-        data: i18n data to validate
-        
-    Returns:
-        Validation result with i18n-specific feedback
-    """
     errors = []
     warnings = []
     
     for field_name, field_data in data.items():
         if isinstance(field_data, dict) and any(lang in field_data for lang in ['en', 'fr', 'de', 'it', 'es']):
-            # This looks like i18n data
             try:
                 i18n_data = I18nData(**field_data)
-                warnings.append(f"✅ {field_name} i18n structure is valid")
+                warnings.append(f"{field_name} i18n structure is valid")
                 
-                # Check for missing translations
                 missing_langs = []
                 for lang in ['fr', 'de', 'it', 'es']:
                     if not hasattr(i18n_data, lang) or not getattr(i18n_data, lang):
                         missing_langs.append(lang)
                 
                 if missing_langs:
-                    warnings.append(f"⚠️ {field_name} missing translations for: {', '.join(missing_langs)}")
+                    warnings.append(f"{field_name} missing translations for: {', '.join(missing_langs)}")
                 
-                # Check character limits
                 for lang in ['en', 'fr', 'de', 'it', 'es']:
                     lang_data = getattr(i18n_data, lang, None)
                     if lang_data and hasattr(lang_data, 'limit') and lang_data.limit:
                         if len(lang_data.translation) > lang_data.limit:
-                            errors.append(f"❌ {field_name} {lang} translation exceeds {lang_data.limit} character limit")
+                            errors.append(f"{field_name} {lang} translation exceeds {lang_data.limit} character limit")
                 
             except ValidationError as e:
-                errors.append(f"❌ {field_name} i18n validation failed: {str(e)}")
+                errors.append(f"{field_name} i18n validation failed: {str(e)}")
         else:
-            warnings.append(f"ℹ️ {field_name} is not i18n data (single value)")
+            warnings.append(f"{field_name} is not i18n data (single value)")
     
     is_valid = len(errors) == 0
     
@@ -140,9 +112,6 @@ async def validate_i18n_structure(data: Dict[str, Any]):
 
 @router.get("/schema-examples")
 async def get_schema_examples():
-    """
-    Get example schemas for demonstration.
-    """
     return {
         "valid_product_example": {
             "name": {
@@ -159,10 +128,9 @@ async def get_schema_examples():
         "invalid_product_example": {
             "name": {
                 "en": {"translation": "BMW X5", "notes": "Product name"}
-                # Missing required fields and translations
             },
-            "price": "invalid_price",  # Should be number
-            "stock_quantity": -5  # Negative stock
+            "price": "invalid_price",
+            "stock_quantity": -5
         },
         "validation_rules": {
             "required_fields": ["name", "description", "price"],

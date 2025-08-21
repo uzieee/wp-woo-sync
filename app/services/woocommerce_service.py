@@ -1,6 +1,3 @@
-"""
-WooCommerce REST API service using httpx for async operations.
-"""
 import httpx
 import base64
 from typing import Dict, Any, Optional, List
@@ -10,15 +7,11 @@ from app.models.schemas import PaginationParams
 
 
 class WooCommerceService:
-    """Service for WooCommerce REST API operations."""
-    
     def __init__(self):
-        """Initialize WooCommerce service with authentication."""
         self.base_url = settings.BASE_URL.rstrip('/')
         self.consumer_key = settings.WC_CONSUMER_KEY
         self.consumer_secret = settings.WC_CONSUMER_SECRET
         
-        # Create Basic Auth header for WooCommerce
         credentials = f"{self.consumer_key}:{self.consumer_secret}"
         encoded_credentials = base64.b64encode(credentials.encode()).decode()
         self.headers = {
@@ -33,21 +26,6 @@ class WooCommerceService:
         data: Optional[Dict[str, Any]] = None,
         params: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
-        """
-        Make HTTP request to WooCommerce REST API.
-        
-        Args:
-            method: HTTP method (GET, POST, etc.)
-            endpoint: API endpoint
-            data: Request body data
-            params: Query parameters
-            
-        Returns:
-            API response data
-            
-        Raises:
-            HTTPException: If API request fails
-        """
         url = f"{self.base_url}/wp-json/wc/v3/{endpoint}"
         
         async with httpx.AsyncClient() as client:
@@ -82,15 +60,6 @@ class WooCommerceService:
                 )
     
     async def get_products(self, pagination: PaginationParams) -> Dict[str, Any]:
-        """
-        Get WooCommerce products with pagination.
-        
-        Args:
-            pagination: Pagination parameters
-            
-        Returns:
-            Normalized products response
-        """
         params = {
             "page": pagination.page,
             "per_page": pagination.per_page
@@ -166,15 +135,6 @@ class WooCommerceService:
         }
     
     async def create_product(self, product_data: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Create a new WooCommerce product.
-        
-        Args:
-            product_data: Product data in WooCommerce format
-            
-        Returns:
-            Created product data
-        """
         response = await self._make_request("POST", "products", data=product_data)
         
         return {
@@ -208,15 +168,6 @@ class WooCommerceService:
         }
     
     async def get_orders(self, pagination: PaginationParams) -> Dict[str, Any]:
-        """
-        Get WooCommerce orders with pagination.
-        
-        Args:
-            pagination: Pagination parameters
-            
-        Returns:
-            Normalized orders response
-        """
         params = {
             "page": pagination.page,
             "per_page": pagination.per_page
@@ -278,15 +229,6 @@ class WooCommerceService:
         }
     
     async def create_order(self, order_data: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Create a new WooCommerce order.
-        
-        Args:
-            order_data: Order data in WooCommerce format
-            
-        Returns:
-            Created order data
-        """
         response = await self._make_request("POST", "orders", data=order_data)
         
         return {
@@ -319,5 +261,4 @@ class WooCommerceService:
         }
 
 
-# Global WooCommerce service instance
 woocommerce_service = WooCommerceService() 

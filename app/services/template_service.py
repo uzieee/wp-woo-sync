@@ -1,6 +1,3 @@
-"""
-Jinja2 template service for transforming client JSON to platform-specific payloads.
-"""
 import os
 from typing import Dict, Any
 from jinja2 import Environment, FileSystemLoader, Template
@@ -8,10 +5,7 @@ from app.core.config import settings
 
 
 class TemplateService:
-    """Service for processing Jinja2 templates."""
-    
     def __init__(self):
-        """Initialize template environment."""
         template_dir = os.path.join(os.path.dirname(__file__), "..", "templates")
         self.env = Environment(
             loader=FileSystemLoader(template_dir),
@@ -21,16 +15,6 @@ class TemplateService:
         )
     
     def render_template(self, template_name: str, context: Dict[str, Any]) -> str:
-        """
-        Render a Jinja2 template with the given context.
-        
-        Args:
-            template_name: Name of the template file
-            context: Data context for template rendering
-            
-        Returns:
-            Rendered template string
-        """
         try:
             template = self.env.get_template(template_name)
             return template.render(**context)
@@ -38,15 +22,6 @@ class TemplateService:
             raise ValueError(f"Template rendering failed: {str(e)}")
     
     def transform_to_wc_product(self, client_data: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Transform client data to WooCommerce product format.
-        
-        Args:
-            client_data: Arbitrary client JSON data
-            
-        Returns:
-            WooCommerce product payload
-        """
         template_content = """
 {
     "name": "{{ client_data.get('name', client_data.get('title', 'Product')) }}",
@@ -94,15 +69,6 @@ class TemplateService:
         return json.loads(rendered)
     
     def transform_to_wc_order(self, client_data: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Transform client data to WooCommerce order format.
-        
-        Args:
-            client_data: Arbitrary client JSON data
-            
-        Returns:
-            WooCommerce order payload
-        """
         template_content = """
 {
     "payment_method": "{{ client_data.get('payment_method', 'bacs') }}",
@@ -150,15 +116,6 @@ class TemplateService:
         return json.loads(rendered)
     
     def transform_to_wp_post(self, client_data: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Transform client data to WordPress post format.
-        
-        Args:
-            client_data: Arbitrary client JSON data
-            
-        Returns:
-            WordPress post payload
-        """
         template_content = """
 {
     "title": "{{ client_data.get('title', client_data.get('name', 'Post')) }}",
@@ -191,5 +148,4 @@ class TemplateService:
         return json.loads(rendered)
 
 
-# Global template service instance
 template_service = TemplateService() 

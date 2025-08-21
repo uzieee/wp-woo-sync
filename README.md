@@ -1,114 +1,164 @@
-# WP/WC Sync (FastAPI + Jinja + i18n)
+# WP/WC Sync API
 
-A FastAPI microservice that accepts arbitrary client JSON with i18n support, transforms it via Jinja templates into valid WordPress (wp/v2) and WooCommerce (wc/v3) payloads, pushes them to each platform, and also pulls data and normalizes responses for clients.
+WordPress and WooCommerce synchronization API with i18n support.
 
-## 🚀 Features
+## Features
 
-- **i18n JSON Support**: Multi-language content using [Lokalise i18n format](https://lokalise.com/blog/json-l10n/#I18n_JSON_file_example)
-- **Multi-language Transformation**: Automatic language selection with fallback to English
-- **JSON Schema Validation**: Comprehensive validation for incoming and outgoing data
-- **WordPress Integration**: Full CRUD operations for posts via wp/v2 REST API
-- **WooCommerce Integration**: Product and order management via wc/v3 REST API
-- **Authentication**: Application Passwords for WordPress, Consumer Keys for WooCommerce
-- **Response Normalization**: Consistent, concise JSON responses for clients
-- **Error Handling**: Graceful error surfacing with platform-specific error details
-- **Pagination**: Support for page and per_page parameters
-- **Scheduling**: Optional background sync with APScheduler
-- **Frontend Demo**: Interactive web interface for testing and demonstration
+- WordPress REST API integration
+- WooCommerce REST API integration
+- Multi-language (i18n) JSON support
+- JSON schema validation
+- Template-based data transformation
+- Unified API endpoints
 
-## 🛠️ Setup
+## Quick Start
 
+### Prerequisites
+
+- Python 3.11+
+- WordPress site with REST API enabled
+- WooCommerce with REST API enabled
+
+### Installation
+
+1. Clone the repository:
 ```bash
-python -m venv .venv && source .venv/bin/activate
+git clone <repository-url>
+cd wp-woo-sync
+```
+
+2. Install dependencies:
+```bash
 pip install -r requirements.txt
-cp .env.example .env  # fill values from client
-bash run.sh
 ```
 
-## 🌐 Frontend Demo
-
-Visit `http://localhost:8000` to access the interactive demo interface where you can:
-
-- Test i18n JSON transformations
-- Switch between languages (EN, FR, DE, IT, ES)
-- See real-time transformation results
-- Test actual API endpoints
-- View comprehensive examples
-
-## 📝 i18n JSON Format
-
-The system supports the [Lokalise i18n JSON format](https://lokalise.com/blog/json-l10n/#I18n_JSON_file_example):
-
-```json
-{
-  "name": {
-    "en": {
-      "translation": "BMW X5 xDrive40i 2024",
-      "notes": "Product name in English",
-      "context": "Main product title",
-      "limit": 50
-    },
-    "fr": {
-      "translation": "BMW X5 xDrive40i 2024",
-      "notes": "Nom du produit en français",
-      "context": "Titre principal du produit",
-      "limit": 50
-    }
-  }
-}
+3. Configure environment variables:
+```bash
+cp env.example .env
 ```
 
-## 🔌 API Endpoints
+Edit `.env` with your configuration:
+```env
+# WordPress Configuration
+BASE_URL=https://your-wordpress-site.com
+WP_USERNAME=your_username
+WP_APP_PASSWORD=your_application_password
+WP_AUTH_TYPE=basic
 
-### WooCommerce
-- `GET /wc/products` - List products with pagination
-- `POST /wc/products` - Create product from i18n JSON
-- `GET /wc/orders` - List orders with pagination  
-- `POST /wc/orders` - Create order from i18n JSON
+# WooCommerce Configuration
+WC_CONSUMER_KEY=your_consumer_key
+WC_CONSUMER_SECRET=your_consumer_secret
 
-### WordPress
-- `GET /wp/posts` - List posts with pagination
-- `POST /wp/posts` - Create post from i18n JSON
+# Application Configuration
+ENABLE_SCHEDULER=false
+SYNC_CRON=*/15 * * * *
 
-### Demo & Info
-- `GET /` - Interactive frontend demo
+# Server Configuration
+HOST=0.0.0.0
+PORT=8000
+DEBUG=false
+```
+
+4. Run the application:
+```bash
+./run.sh
+```
+
+Or with Docker:
+```bash
+docker build -t wp-woo-sync .
+docker run -p 8000:8000 wp-woo-sync
+```
+
+## API Endpoints
+
+### Unified API
+
+- `POST /api/sync` - Unified endpoint for all operations
+
+### Health Check
+
+- `GET /health` - Health check endpoint
 - `GET /api` - API information
-- `GET /health` - Health check
 
-## 🔧 Environment Variables
+### Frontend
 
-Copy `.env.example` to `.env` and configure:
+- `GET /` - Web interface
 
-- `BASE_URL`: Your WordPress/WooCommerce site URL
-- `WP_USERNAME`: WordPress username
-- `WP_APP_PASSWORD`: WordPress application password
-- `WC_CONSUMER_KEY`: WooCommerce consumer key
-- `WC_CONSUMER_SECRET`: WooCommerce consumer secret
+## Usage Examples
 
-## 🐳 Docker
+### Create WooCommerce Product
 
 ```bash
-docker build -t wp-wc-sync .
-docker run -p 8000:8000 wp-wc-sync
+curl -X POST "http://localhost:8000/api/sync" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "action_id": "create_wc_product",
+    "data": {
+      "name": {
+        "en": {"translation": "Product Name", "notes": "Product name"},
+        "fr": {"translation": "Nom du Produit", "notes": "Nom du produit"}
+      },
+      "description": {
+        "en": {"translation": "Product description", "notes": "Product description"},
+        "fr": {"translation": "Description du produit", "notes": "Description du produit"}
+      },
+      "price": "29.99",
+      "type": "simple"
+    },
+    "language": "en"
+  }'
 ```
 
-## 📚 Documentation
+### Create WordPress Post
 
-See `API_DOCUMENTATION.md` for comprehensive API documentation including:
-- Complete JSON schemas for WordPress and WooCommerce
-- i18n transformation examples
-- Field mapping reference
-- Error response formats
+```bash
+curl -X POST "http://localhost:8000/api/sync" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "action_id": "create_wp_post",
+    "data": {
+      "title": {
+        "en": {"translation": "Post Title", "notes": "Post title"},
+        "fr": {"translation": "Titre de l\'article", "notes": "Titre de l\'article"}
+      },
+      "content": {
+        "en": {"translation": "Post content", "notes": "Post content"},
+        "fr": {"translation": "Contenu de l\'article", "notes": "Contenu de l\'article"}
+      },
+      "status": "publish"
+    },
+    "language": "en"
+  }'
+```
 
-## 🎯 Supported Languages
+## Configuration
 
-- English (en) - Default fallback
-- French (fr)
-- German (de)
-- Italian (it)
-- Spanish (es)
+### WordPress Setup
 
-## 📋 Sample Files
+1. Enable REST API in WordPress
+2. Create an Application Password for API access
+3. Configure `WP_USERNAME` and `WP_APP_PASSWORD` in `.env`
 
-- `samples/i18n_product_example.json` - Complete i18n product example
-- See frontend demo for more examples
+### WooCommerce Setup
+
+1. Enable REST API in WooCommerce
+2. Generate API keys (Consumer Key and Consumer Secret)
+3. Configure `WC_CONSUMER_KEY` and `WC_CONSUMER_SECRET` in `.env`
+
+## Development
+
+### Running in Development Mode
+
+Set `DEBUG=true` in your `.env` file to enable auto-reload.
+
+### Testing
+
+The API includes validation endpoints for testing:
+
+- `POST /api/validate-product` - Validate product schema
+- `POST /api/validate-i18n` - Validate i18n structure
+
+## License
+
+This project is licensed under the MIT License.

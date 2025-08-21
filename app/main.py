@@ -1,6 +1,3 @@
-"""
-Main FastAPI application entry point.
-"""
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
@@ -15,7 +12,6 @@ from app.api import unified
 
 load_dotenv()
 
-# Setup templates
 templates = Jinja2Templates(directory="app/templates")
 
 
@@ -23,18 +19,16 @@ templates = Jinja2Templates(directory="app/templates")
 async def lifespan(app: FastAPI):
     if settings.ENABLE_SCHEDULER:
         scheduler.start()
-        print("Scheduler started")
     
     yield
     
     if settings.ENABLE_SCHEDULER:
         scheduler.shutdown()
-        print("Scheduler shutdown")
 
 
 app = FastAPI(
     title="WP/WC Sync API",
-    description="FastAPI microservice for WordPress and WooCommerce synchronization with i18n support",
+    description="WordPress and WooCommerce synchronization API",
     version="2.0.0",
     lifespan=lifespan
 )
@@ -52,13 +46,11 @@ app.include_router(unified.router, prefix="/api", tags=["Unified API"])
 
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
-    """Serve the frontend demo interface."""
     return templates.TemplateResponse("index.html", {"request": request})
 
 
 @app.get("/api")
 async def api_info():
-    """API information endpoint."""
     return {
         "message": "WP/WC Sync API v2.0.0",
         "version": "2.0.0",
@@ -79,10 +71,14 @@ async def api_info():
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint."""
     return {"status": "healthy", "version": "2.0.0"}
 
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+    uvicorn.run(
+        app, 
+        host=settings.HOST, 
+        port=settings.PORT,
+        reload=settings.DEBUG
+    ) 

@@ -1,6 +1,3 @@
-"""
-Enhanced template service with i18n JSON support for multi-language transformations.
-"""
 import os
 from typing import Dict, Any, Optional
 from jinja2 import Environment, FileSystemLoader, Template
@@ -8,10 +5,7 @@ from app.models.i18n_schemas import I18nData, LanguageCode
 
 
 class I18nTemplateService:
-    """Enhanced service for processing i18n JSON templates."""
-    
     def __init__(self):
-        """Initialize template environment."""
         template_dir = os.path.join(os.path.dirname(__file__), "..", "templates")
         self.env = Environment(
             loader=FileSystemLoader(template_dir),
@@ -21,15 +15,12 @@ class I18nTemplateService:
         )
     
     def extract_i18n_data(self, data: Dict[str, Any]) -> Dict[str, I18nData]:
-        """Extract i18n data from client JSON."""
         i18n_data = {}
         
         for key, value in data.items():
             if isinstance(value, dict) and any(lang in value for lang in ['en', 'fr', 'de', 'it', 'es']):
-                # This is i18n data
                 i18n_data[key] = I18nData(**value)
             elif isinstance(value, str):
-                # Single string - convert to i18n format
                 i18n_data[key] = I18nData(
                     en={"translation": value, "notes": f"Auto-generated for {key}"}
                 )
@@ -37,7 +28,6 @@ class I18nTemplateService:
         return i18n_data
     
     def transform_to_wc_product_i18n(self, client_data: Dict[str, Any], language: str = "en") -> Dict[str, Any]:
-        """Transform client data to WooCommerce product format with i18n support."""
         i18n_data = self.extract_i18n_data(client_data)
         
         template_content = """
@@ -93,7 +83,6 @@ class I18nTemplateService:
         return json.loads(rendered)
     
     def transform_to_wc_order_i18n(self, client_data: Dict[str, Any], language: str = "en") -> Dict[str, Any]:
-        """Transform client data to WooCommerce order format with i18n support."""
         i18n_data = self.extract_i18n_data(client_data)
         
         template_content = """
@@ -147,7 +136,6 @@ class I18nTemplateService:
         return json.loads(rendered)
     
     def transform_to_wp_post_i18n(self, client_data: Dict[str, Any], language: str = "en") -> Dict[str, Any]:
-        """Transform client data to WordPress post format with i18n support."""
         i18n_data = self.extract_i18n_data(client_data)
         
         template_content = """
@@ -186,5 +174,4 @@ class I18nTemplateService:
         return json.loads(rendered)
 
 
-# Global i18n template service instance
 i18n_template_service = I18nTemplateService() 

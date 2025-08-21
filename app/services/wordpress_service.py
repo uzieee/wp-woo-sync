@@ -1,6 +1,3 @@
-"""
-WordPress REST API service using httpx for async operations.
-"""
 import httpx
 import base64
 from typing import Dict, Any, Optional, List
@@ -10,15 +7,11 @@ from app.models.schemas import PaginationParams
 
 
 class WordPressService:
-    """Service for WordPress REST API operations."""
-    
     def __init__(self):
-        """Initialize WordPress service with authentication."""
         self.base_url = settings.BASE_URL.rstrip('/')
         self.username = settings.WP_USERNAME
         self.password = settings.WP_APP_PASSWORD
         
-        # Create Basic Auth header
         credentials = f"{self.username}:{self.password}"
         encoded_credentials = base64.b64encode(credentials.encode()).decode()
         self.headers = {
@@ -33,21 +26,6 @@ class WordPressService:
         data: Optional[Dict[str, Any]] = None,
         params: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
-        """
-        Make HTTP request to WordPress REST API.
-        
-        Args:
-            method: HTTP method (GET, POST, etc.)
-            endpoint: API endpoint
-            data: Request body data
-            params: Query parameters
-            
-        Returns:
-            API response data
-            
-        Raises:
-            HTTPException: If API request fails
-        """
         url = f"{self.base_url}/wp-json/wp/v2/{endpoint}"
         
         async with httpx.AsyncClient() as client:
@@ -82,19 +60,10 @@ class WordPressService:
                 )
     
     async def get_posts(self, pagination: PaginationParams) -> Dict[str, Any]:
-        """
-        Get WordPress posts with pagination.
-        
-        Args:
-            pagination: Pagination parameters
-            
-        Returns:
-            Normalized posts response
-        """
         params = {
             "page": pagination.page,
             "per_page": pagination.per_page,
-            "_embed": "true"  # Include featured media and other embedded data
+            "_embed": "true"
         }
         
         response = await self._make_request("GET", "posts", params=params)
@@ -140,15 +109,6 @@ class WordPressService:
         }
     
     async def create_post(self, post_data: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Create a new WordPress post.
-        
-        Args:
-            post_data: Post data in WordPress format
-            
-        Returns:
-            Created post data
-        """
         response = await self._make_request("POST", "posts", data=post_data)
         
         return {
@@ -166,15 +126,6 @@ class WordPressService:
         }
     
     async def get_post(self, post_id: int) -> Dict[str, Any]:
-        """
-        Get a specific WordPress post by ID.
-        
-        Args:
-            post_id: WordPress post ID
-            
-        Returns:
-            Post data
-        """
         response = await self._make_request("GET", f"posts/{post_id}")
         
         return {
@@ -193,5 +144,4 @@ class WordPressService:
         }
 
 
-# Global WordPress service instance
 wordpress_service = WordPressService() 

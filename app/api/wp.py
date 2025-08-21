@@ -1,6 +1,3 @@
-"""
-WordPress API router for posts with i18n support.
-"""
 from fastapi import APIRouter, HTTPException, Query
 from typing import Dict, Any
 
@@ -23,16 +20,6 @@ async def get_posts(
     page: int = Query(default=1, ge=1, description="Page number"),
     per_page: int = Query(default=10, ge=1, le=100, description="Items per page")
 ):
-    """
-    Get WordPress posts with pagination.
-    
-    Args:
-        page: Page number (default: 1)
-        per_page: Items per page (default: 10, max: 100)
-        
-    Returns:
-        Paginated posts response
-    """
     try:
         pagination = PaginationParams(page=page, per_page=per_page)
         result = await wordpress_service.get_posts(pagination)
@@ -51,23 +38,12 @@ async def get_posts(
 
 @router.post("/posts", response_model=NormalizedResponse)
 async def create_post(request: MultiLanguageRequest):
-    """
-    Create a new WordPress post from client JSON with i18n support.
-    
-    Args:
-        request: Multi-language client JSON data to transform and create post
-        
-    Returns:
-        Created post data
-    """
     try:
-        # Transform client data to WordPress format with i18n support
         wp_post_data = i18n_template_service.transform_to_wp_post_i18n(
             request.data, 
             request.language.value
         )
         
-        # Create post via WordPress API
         created_post = await wordpress_service.create_post(wp_post_data)
         
         return NormalizedResponse(
